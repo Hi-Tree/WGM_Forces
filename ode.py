@@ -1,62 +1,78 @@
 import numpy as np
 import forces
 from scipy.integrate import odeint
+from scipy.stats import maxwell 
 import matplotlib.pyplot as plt
 
-v_x = 0.001
-v_y = 0.001 
-v_z = 0
+#Random Cartesian how many N set of randoms to return 
+def randomized(N,vx_max):
+    rand_v = np.zeros((N,3),dtype = float)
+    i = 0
+    while i != N:
+        v_x = maxwell.rvs()
+        v_y = maxwell.rvs()
+        v_z = maxwell.rvs()
+        if v_x < vx_max and v_x >= 0 : #less than max and positive
+            rand[i,0] = v_x
+            rand[i,1] = v_y
+            rand[i,2] = v_z
+            i++
+        else:
+            i--
+    return rand_v
+            
 
 gamma = 2
-params = {
-  'l': 720,
-  'x_r': 524.5,            # resonance k0 * R
-  'R_ratio': 7.5e-2 / 5.6, # R_p / R_r
+par = {
+  'l': 40,
+  'x_r': 39.107,            
+  'R_ratio': 7.5e-2 / 5.6, 
   'n_w': 1.326,
   'n_p': 1.572
 }
 
-def f(u, t, params, gamma):
-    rho, drho, theta, dtheta, phi, dphi = u
-    if rho >= 1.5:
-        dudt = [
-            drho, forces.rho(rho, theta, params) - gamma * drho + rho * (dtheta * np.cos(phi)) ** 2 + rho * dphi ** 2,
-            dtheta, (forces.theta(rho, theta, params) - gamma * rho * dtheta * np.cos(phi) - 2 * drho * dtheta * np.cos(phi) + 2 * rho * dtheta * dphi * np.sin(phi)) / (rho * np.cos(phi)),
-            dphi, (forces.phi(rho, theta, params) - gamma * rho * dphi - 2 * drho * dphi - rho * dphi ** 2 * np.sin(phi) * np.cos(phi)) / rho
-        ]
-    return dudt
 
-time = np.linspace(0, 1.25, 100)
+time = np.linspace(0, 1000, 1000)
 
-# initial conditions
-rho = params['x_r'] / (2 * np.pi) * 1.5 # 1.5 of resonator's radius
-
+#Initial Positions
+rho = par['x_r']*(2 * np.pi) * 1.5 
 theta = np.pi / 2
+phi = 0
 
-phi = 0.001 #np.pi / 2 * 0 #just the initial position is zero but it changes with time
-
+#Initial Velocities 
 drho = v_x*np.sin(theta)*np.cos(phi)+v_y*np.sin(theta)*np.sin(phi)+v_z*np.cos(theta)
 dtheta = v_x*np.cos(theta)*np.cos(phi)+v_y*np.cos(theta)*np.sin(phi)-v_z*np.sin(theta)
 dphi = v_y*np.cos(phi)-v_x*np.sin(phi)
 
-u0 = [rho, drho, theta, dtheta, phi, dphi]
-sol = odeint(f, u0, time, args = (params, gamma))
 
+def f(u, t, par, gamma):
+    rho, drho, theta, dtheta, phi, dphi = u
+    if rho >= par['x_r']: #Stop when reach resonator
+        dudt = [
+            drho, forces.rho(rho, theta, par) - gamma * drho + rho * (dtheta * np.cos(phi)) ** 2 + rho * dphi ** 2,
+            dtheta, (forces.theta(rho, theta, par) - gamma * rho * dtheta * np.cos(phi) - 2 * drho * dtheta * np.cos(phi) + 2 * rho * dtheta * dphi * np.sin(phi)) / (rho * np.cos(phi)),
+            dphi, (forces.phi(rho, theta, par) - gamma * rho * dphi - 2 * drho * dphi - rho * dphi ** 2 * np.sin(phi) * np.cos(phi)) / rho
+        ]
+        #print(rho)
+    return dudt
 
-fig = plt.figure()
-gs = fig.add_gridspec(3, hspace = 0)
-axs = gs.subplots(sharex = True)
-axs[0].plot(time, sol[:, 0], "o", markersize = 2)
-# show resonator's surface
-#axs[0].axhline(params['x_r'] / (2 * np.pi), ls = 'dashed', alpha = 0.5, color = 'red')
-axs[0].set_ylabel(r'$\rho$')
-axs[1].plot(time, sol[:, 2] % np.pi, "o", markersize = 2)
-axs[1].set_ylabel(r'$\theta$')
-axs[2].plot(time, sol[:, 4] % (2 * np.pi), "o", markersize = 2)
-axs[2].set_ylabel(r'$\phi$')
-
-for ax in axs:
-    ax.label_outer()
-    
-plt.xlabel('Time')
+#Solve
+u0 = [rho, drho, theta, dtheta, phi, dphi] 
+sol = odeint(f, u0, time, args = (par, gamma))
+#print(sol[:,1])
+#Graph
+fig, (ax1,ax2, ax3,ax4,ax5,ax6) = plt.subplots(6)
+ax1.plot(time, sol[:, 0], "-", markersize = 2)
+ax1.set_ylabel("rho")
+ax2.plot(time, sol[:, 1], "-", markersize = 2)
+ax2.set_ylabel("drho")
+ax3.plot(time, sol[:, 2], "-", markersize = 2)
+ax3.set_ylabel("theta")
+ax4.plot(time, sol[:, 3], "-", markersize = 2)
+ax4.set_ylabel("dtheta")
+ax5.plot(time, sol[:, 4], "-", markersize = 2) 
+ax5.set_ylabel("phi")
+ax6.plot(time, sol[:, 5], "-", markersize = 2)
+ax6.set_ylabel("dphi")
+plt.xlabel("time")
 plt.show()
