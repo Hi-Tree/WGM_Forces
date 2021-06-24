@@ -13,14 +13,13 @@ def randomized(N,vx_max):
         v_y = maxwell.rvs()
         v_z = maxwell.rvs()
         if v_x < vx_max and v_x >= 0 : #less than max and positive
-            rand[i,0] = v_x
-            rand[i,1] = v_y
-            rand[i,2] = v_z
-            i++
+            rand_v[i,0] = v_x
+            rand_v[i,1] = v_y
+            rand_v[i,2] = v_z
+            i+=1
         else:
-            i--
-    return rand_v
-            
+            i-=1
+    return rand_v  
 
 gamma = 2
 par = {
@@ -31,18 +30,15 @@ par = {
   'n_p': 1.572
 }
 
-
-time = np.linspace(0, 1000, 1000)
+allData = []
+time = np.linspace(0, 10, 100)
 
 #Initial Positions
 rho = par['x_r']*(2 * np.pi) * 1.5 
 theta = np.pi / 2
 phi = 0
 
-#Initial Velocities 
-drho = v_x*np.sin(theta)*np.cos(phi)+v_y*np.sin(theta)*np.sin(phi)+v_z*np.cos(theta)
-dtheta = v_x*np.cos(theta)*np.cos(phi)+v_y*np.cos(theta)*np.sin(phi)-v_z*np.sin(theta)
-dphi = v_y*np.cos(phi)-v_x*np.sin(phi)
+
 
 
 def f(u, t, par, gamma):
@@ -56,11 +52,23 @@ def f(u, t, par, gamma):
         #print(rho)
     return dudt
 
+#Initial Velocities 
+values = randomized(10,5)        
+v_x = values[:,0]
+v_y = values[:,1]
+v_z = values[:,2] 
+drho = v_x*np.sin(theta)*np.cos(phi)+v_y*np.sin(theta)*np.sin(phi)+v_z*np.cos(theta)
+dtheta = v_x*np.cos(theta)*np.cos(phi)+v_y*np.cos(theta)*np.sin(phi)-v_z*np.sin(theta)
+dphi = v_y*np.cos(phi)-v_x*np.sin(phi)
+
 #Solve
-u0 = [rho, drho, theta, dtheta, phi, dphi] 
-sol = odeint(f, u0, time, args = (par, gamma))
-#print(sol[:,1])
+for j in range(len(v_x)):
+    u0 = [rho, drho, theta, dtheta[j], phi[j], dphi[j]] 
+    sol = odeint(f, u0, time, args = (par, gamma))
+    allData.append(sol)
+print(allData)
 #Graph
+'''
 fig, (ax1,ax2, ax3,ax4,ax5,ax6) = plt.subplots(6)
 ax1.plot(time, sol[:, 0], "-", markersize = 2)
 ax1.set_ylabel("rho")
@@ -76,3 +84,4 @@ ax6.plot(time, sol[:, 5], "-", markersize = 2)
 ax6.set_ylabel("dphi")
 plt.xlabel("time")
 plt.show()
+'''
