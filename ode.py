@@ -6,20 +6,20 @@ import matplotlib.pyplot as plt
 
 #Random Cartesian how many N set of randoms to return 
 def randomized(N,vx_max):
-    rand_v = np.zeros((N,3),dtype = float)
-    i = 0
-    while i != N:
+    rand_x = []
+    rand_y = []
+    rand_z = []
+    while len(rand_x) != N:
         v_x = maxwell.rvs()
         v_y = maxwell.rvs()
         v_z = maxwell.rvs()
         if v_x < vx_max and v_x >= 0 : #less than max and positive
-            rand_v[i,0] = v_x
-            rand_v[i,1] = v_y
-            rand_v[i,2] = v_z
-            i+=1
-        else:
-            i-=1
-    return rand_v  
+            rand_x.append(v_x)
+            rand_y.append(v_y)
+            rand_z.append(v_z)
+    rand_v = np.zeros((N,3),dtype = float)
+    rand_v[:,0], rand_v[:,1], rand_v[:,2] = [rand_x,rand_y,rand_z]
+    return rand_v 
 
 gamma = 2
 par = {
@@ -34,7 +34,7 @@ allData = []
 time = np.linspace(0, 10, 100)
 
 #Initial Positions
-rho = par['x_r']*(2 * np.pi) * 1.5 
+rho = par['x_r']*(2 * np.pi) * 1.1 
 theta = np.pi / 2
 phi = 0
 
@@ -53,7 +53,7 @@ def f(u, t, par, gamma):
     return dudt
 
 #Initial Velocities 
-values = randomized(10,5)        
+values = randomized(1,.5)        
 v_x = values[:,0]
 v_y = values[:,1]
 v_z = values[:,2] 
@@ -61,13 +61,22 @@ drho = v_x*np.sin(theta)*np.cos(phi)+v_y*np.sin(theta)*np.sin(phi)+v_z*np.cos(th
 dtheta = v_x*np.cos(theta)*np.cos(phi)+v_y*np.cos(theta)*np.sin(phi)-v_z*np.sin(theta)
 dphi = v_y*np.cos(phi)-v_x*np.sin(phi)
 
+
 #Solve
 for j in range(len(v_x)):
-    u0 = [rho, drho, theta, dtheta[j], phi[j], dphi[j]] 
+    u0 = [rho, drho[j], theta, dtheta[j], phi, dphi[j]] 
     sol = odeint(f, u0, time, args = (par, gamma))
-    allData.append(sol)
+    m,b = np.polyfit(time,sol[:,0],1) #linear fit we just want to see if it is dicreasing
+    print(m)
+    if m < 0: #if the line of best fit for rho is negative 
+        allData.append(u0) # save the initial conditions
 print(allData)
 #Graph
+fig, (ax1,ax2) = plt.subplots(2)
+ax1.plot(time,(m*time)+b)
+ax1.plot(time,sol[:,0])
+ax2.plot(time,sol[:,1])
+plt.show()
 '''
 fig, (ax1,ax2, ax3,ax4,ax5,ax6) = plt.subplots(6)
 ax1.plot(time, sol[:, 0], "-", markersize = 2)
