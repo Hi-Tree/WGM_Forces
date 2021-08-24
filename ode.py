@@ -43,7 +43,7 @@ Rp = np.random.normal(loc = 7.5*10**(-7), scale = 3.75*10**(-8), size = N)
 eta = [(0.00700175)/(v_x[i]*6*np.pi*Rp[i]) for i in range(N)]
 gamma_ = [6*np.pi*eta[i]*Rp[i] for i in range(N)]
 
-
+#v = sphere 750nm rad
 allData = []
 time = np.linspace(0, 50, 100)
 
