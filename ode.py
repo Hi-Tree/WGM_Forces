@@ -7,6 +7,9 @@ import matplotlib.pyplot as plt
 ################  Changes Made ##############
 # randomize Rp mean = 750nm with 5% deviation 
 # adjust eta such that v * gamma = || 0.00700175 = v * 6*np.pi*eta*Rp
+# uniform random positions
+# purely data collective no graphs display, quits uppon reaching resonator 
+# ****** IMP if pos1 > pos2 and not reached resonator quit
 N = 1
 
 def randomized(vx_max):
@@ -17,7 +20,7 @@ def randomized(vx_max):
         vx = maxwell.rvs()
         vy = maxwell.rvs()
         vz = maxwell.rvs()
-        if vx < vx_max and vx >= 0 : #less than max and positive
+        if vx < vx_max: #less than max and positive
             rand_x.append(0.01)
             rand_y.append(0.01)
             rand_z.append(0.01)
@@ -45,7 +48,7 @@ gamma_ = [6*np.pi*eta[i]*Rp[i] for i in range(N)]
 
 #v = sphere 750nm rad
 allData = []
-time = np.linspace(0, 50, 100)
+time = np.linspace(0, 80, 100)
 
 def f(u, t, par, gamma):
     rho, drho, theta, dtheta, phi, dphi = u
@@ -55,7 +58,9 @@ def f(u, t, par, gamma):
             dtheta, (forces.theta(rho, theta, par) - gamma * rho * dtheta * np.cos(phi) - 2 * drho * dtheta * np.cos(phi) + 2 * rho * dtheta * dphi * np.sin(phi)) / (rho * np.cos(phi)),
             dphi, (forces.phi(rho, theta, par) - gamma * rho * dphi - 2 * drho * dphi - rho * dphi ** 2 * np.sin(phi) * np.cos(phi)) / rho
         ]
-        #print(rho)
+    else:
+        print(t)
+        return None
     return dudt
 
 #Solve
@@ -69,34 +74,25 @@ for j in range(N):
         'n_p': 1.572
         }
     u0 = [rho, drho[j], theta, dtheta[j], phi, dphi[j]] 
-    sol = odeint(f, u0, time, args = (par, gamma))
-    m,b = np.polyfit(time,sol[:,0],1) #linear fit we just want to see if it is dicreasing
-    print(m)
-    if m < 0: #if the line of best fit for rho is negative 
-        allData.append(u0) # save the initial conditions
-        print(Rp[j])
-print(allData)
+    sol = odeint(f, u0, time, args = (par, gamma*0))
+    
 #Graph
-
-fig, (ax1,ax2) = plt.subplots(2)
-ax1.plot(time,(m*time)+b)
-ax1.plot(time,sol[:,0])
-ax2.plot(time,sol[:,1])
-plt.show()
 '''
-fig, (ax1,ax2, ax3,ax4,ax5,ax6) = plt.subplots(6)
-ax1.plot(time, sol[:, 0], "-", markersize = 2)
-ax1.set_ylabel("rho")
-ax2.plot(time, sol[:, 1], "-", markersize = 2)
-ax2.set_ylabel("drho")
-ax3.plot(time, sol[:, 2], "-", markersize = 2)
-ax3.set_ylabel("theta")
-ax4.plot(time, sol[:, 3], "-", markersize = 2)
-ax4.set_ylabel("dtheta")
-ax5.plot(time, sol[:, 4], "-", markersize = 2) 
-ax5.set_ylabel("phi")
-ax6.plot(time, sol[:, 5], "-", markersize = 2)
-ax6.set_ylabel("dphi")
-plt.xlabel("time")
+fig = plt.figure()
+gs = fig.add_gridspec(3, hspace = 0)
+axs = gs.subplots(sharex = True)
+axs[0].plot(time, sol[:, 0], markersize = 2)
+#show resonator's surface
+axs[0].axhline(par['x_r'], ls = 'dashed', alpha = 0.5, color = 'red')
+axs[0].set_ylabel(r'$\rho$')
+axs[1].plot(time, sol[:, 2], markersize = 2)
+axs[1].set_ylabel(r'$\theta$')
+axs[2].plot(time, sol[:, 4], markersize = 2)
+axs[2].set_ylabel(r'$\phi$')
+
+for ax in axs:
+    ax.label_outer()
+    
+plt.xlabel('Time')
 plt.show()
 '''
