@@ -3,6 +3,7 @@ import forces
 from scipy.integrate import odeint
 from scipy.stats import maxwell 
 import matplotlib.pyplot as plt
+import pandas as pd
 
 ################  Changes Made ##############
 # randomize Rp mean = 750nm with 5% deviation 
@@ -11,7 +12,7 @@ import matplotlib.pyplot as plt
 # purely data collective no graphs display, quits uppon reaching resonator 
 # ****** IMP if pos1 > pos2 and not reached resonator quit
 N = 1
-
+Results = pd.DataFrame()
 def randomized(vx_max):
     rand_x = []
     rand_y = []
@@ -52,15 +53,11 @@ time = np.linspace(0, 80, 100)
 
 def f(u, t, par, gamma):
     rho, drho, theta, dtheta, phi, dphi = u
-    if rho >= par['x_r']: #Stop when reach resonator
-        dudt = [
+    dudt = [
             drho, forces.rho(rho, theta, par) - gamma * drho + rho * (dtheta * np.cos(phi)) ** 2 + rho * dphi ** 2,
             dtheta, (forces.theta(rho, theta, par) - gamma * rho * dtheta * np.cos(phi) - 2 * drho * dtheta * np.cos(phi) + 2 * rho * dtheta * dphi * np.sin(phi)) / (rho * np.cos(phi)),
             dphi, (forces.phi(rho, theta, par) - gamma * rho * dphi - 2 * drho * dphi - rho * dphi ** 2 * np.sin(phi) * np.cos(phi)) / rho
         ]
-    else:
-        print(t)
-        return None
     return dudt
 
 #Solve
