@@ -4,7 +4,7 @@ from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 
 
-time = np.linspace(0, 80000, 10000)
+time = np.linspace(0, 80, 100)
 
 def f(u, t, par, gamma):
     rho, drho, theta, dtheta, phi, dphi = u
@@ -15,18 +15,14 @@ def f(u, t, par, gamma):
         ]
     return dudt
 
-v_x = 0.00000000000001
-v_y = 0.01
-v_z = 0.001
-
 rho = 40
-theta = np.pi / 2
+theta = np.pi/2
 phi = 0
 
-drho = v_x*np.sin(theta)*np.cos(phi)+v_y*np.sin(theta)*np.sin(phi)+v_z*np.cos(theta)
-dtheta = v_x*np.cos(theta)*np.cos(phi)+v_y*np.cos(theta)*np.sin(phi)-v_z*np.sin(theta)
-dphi = v_y*np.cos(phi)-v_x*np.sin(phi)
-
+drho = 0.0075
+dtheta = 0.02
+dphi = 0
+# find how they are related 
 par = {
         'l': 40,
         'x_r': 39.107,            
@@ -35,8 +31,8 @@ par = {
         'n_p': 1.572
         }
 
-eta = (0.00700175)/(v_x*6*np.pi*7.5e-2)
-gamma =  6*np.pi*eta*7.5e-2
+
+gamma =  0
 
 u0 = [rho, drho, theta, dtheta, phi, dphi]
 sol = odeint(f, u0, time, args = (par, gamma))
