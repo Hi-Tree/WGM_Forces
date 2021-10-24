@@ -17,8 +17,8 @@ import pandas as pd
 j = 0
 TC = []
 ###################################################    RANDOMIZE ALL VARIABLES #####################################################
-N = 5
-Results = pd.DataFrame(columns=['rand_x','rand_y','rand_z','rho_','theta_','phi_','dRho_','dTheta_','dPhi_','Rp_','gamma_','time_'])
+N = 10000
+Results = pd.DataFrame(columns=['rand_x','rand_y','rand_z','rho_','theta_','phi_','dRho_','dTheta_','dPhi_','Rp_','gamma_','size','time_'])
 while Results.count()[0] != N:
     Rp = np.random.uniform(7.5*10**(-7)-3.75*10**(-8), 7.5*10**(-7)+3.75*10**(-8))
     rho = np.random.uniform(39.107,39.107+(2*np.pi))
@@ -31,7 +31,7 @@ while Results.count()[0] != N:
     gamma = 6*np.pi*eta*Rp 
     dRhodT = vx*np.sin(theta)*np.cos(phi)+vy*np.sin(theta)*np.sin(phi)+vz*np.cos(theta)
     if dRhodT <= 0.0075:
-        Results = pd.concat([pd.DataFrame([[vx,vy,vz,rho,theta,phi,dRhodT,0,0,Rp,gamma,None]],columns = Results.columns),Results],ignore_index = True)
+        Results = pd.concat([pd.DataFrame([[vx,vy,vz,rho,theta,phi,dRhodT,0,0,Rp,gamma,(4/3)*np.pi*Rp**3,None]],columns = Results.columns),Results],ignore_index = True)
 
 ############################################################  Function #######################################################################################
 def f(u, t, par, gamma):
@@ -58,7 +58,8 @@ while j != N:
         }
     u0 = [Results['rho_'][j],Results['dRho_'][j], Results['theta_'][j], Results['dTheta_'][j], Results['phi_'][j], Results['dPhi_'][j]] 
     sol = odeint(f, u0, time, args = (par, gamma*0))
-    Results.at[j,'time_'] = TC[0]
+    if len(TC) != 0:
+        Results.at[j,'time_'] = TC[0]
     TC.clear()
     j+=1
 
