@@ -20,8 +20,8 @@ j = 0
 TC = []
 final = pd.DataFrame(columns=['rand_x','rand_y','rand_z','rho_','theta_','phi_','dRho_','dTheta_','dPhi_','Rp_','gamma_','time_'])
 ###################################################    RANDOMIZE ALL VARIABLES #####################################################
-for i in range(1000):
-    N = 100
+for i in range(10):
+    N = 2
     Results = pd.DataFrame(columns=['rand_x','rand_y','rand_z','rho_','theta_','phi_','dRho_','dTheta_','dPhi_','Rp_','gamma_','time_'])
     while Results.count()[0] != N:
         Rp = np.random.uniform(7.5*10**(-7)-3.75*10**(-8), 7.5*10**(-7)+3.75*10**(-8))
@@ -36,7 +36,7 @@ for i in range(1000):
         dRhodT = vx*np.sin(theta)*np.cos(phi)+vy*np.sin(theta)*np.sin(phi)+vz*np.cos(theta)
         if dRhodT <= 0.0075:
             Results = pd.concat([pd.DataFrame([[vx,vy,vz,rho,theta,phi,dRhodT,0,0,Rp,gamma,None]],columns = Results.columns),Results],ignore_index = True)
-
+    
 ############################################################  Function #######################################################################################
     def f(u, t, par, gamma):
         rho, drho, theta, dtheta, phi, dphi = u
@@ -47,11 +47,13 @@ for i in range(1000):
             ]
         if rho <= 39.107:
             TC.append(t)
+            return [None,None,None,None,None,None]
         return dudt
 ###################################################### Parameters and Solutions #######################################################################
 
-    time = np.linspace(0, 80, 100)
+    time = np.linspace(0, 100, 1000)
     while j != N:
+        print(j)
         gamma_ = Results['gamma_'][j]
         par = {
             'l': 40,
@@ -70,11 +72,13 @@ for i in range(1000):
     Results = Results.sort_values('time_', ascending = True)
     final = final.append(Results[:1])
 
+print(final)
+'''
 fig, ax = plt.subplots()
 sns.histplot(final['Rp_'], bins = 10, ax = ax)
 ax.set_xlim(7.5*10**(-7)-3.75*10**(-8), 7.5*10**(-7)+3.75*10**(-8))
 plt.show()
-
+'''
 
 
 
