@@ -13,9 +13,9 @@ def randomized(N):
         rho = np.random.uniform(39.107,39.107+(2*np.pi))
         theta = np.random.uniform((np.pi-np.sqrt(1/40)),(np.pi+np.sqrt(1/40)))
         phi = np.random.uniform(0,np.pi*2)
-        vx = maxwell.rvs()
-        vy = maxwell.rvs()
-        vz = maxwell.rvs()
+        vx = np.random.normal()
+        vy = np.random.normal()
+        vz = np.random.normal()
         eta = (0.00700175)/(vx*6*np.pi*Rp)
         gamma = 6*np.pi*eta*Rp 
         dRhodT = vx*np.sin(theta)*np.cos(phi)+vy*np.sin(theta)*np.sin(phi)+vz*np.cos(theta)
