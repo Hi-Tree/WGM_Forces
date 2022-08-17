@@ -3,7 +3,7 @@ from scipy.special import spherical_yn, spherical_jn
 import matplotlib.pyplot as plt
 
 
-# gradient force = 0
+# gradient force
 def grad_rho(rho, theta, params):
     l, n_w, x_r = params["l"], params["n_w"], params["x_r"]
     kR = n_w * x_r
@@ -20,7 +20,7 @@ def grad_rho(rho, theta, params):
             + spherical_yn(l, kR) * spherical_yn(l, kR, True)
         )
     )
-    return 0
+    return value
 
 
 def grad_theta(rho, theta, params):
@@ -39,10 +39,10 @@ def grad_theta(rho, theta, params):
             )
         )
     )
-    return 0
+    return value
 
 
-# scattering force = 0
+# scattering force
 def scat_rho(rho, theta, params):
     l, n_w, n_p, R_ratio, x_r = (
         params["l"],
@@ -66,7 +66,7 @@ def scat_rho(rho, theta, params):
         spherical_jn(l, kR) * spherical_jn(l, kR, True)
         + spherical_yn(l, kR) * spherical_yn(l, kR, True)
     )
-    return 0
+    return value
 
 
 def scat_phi(rho, theta, params):
@@ -97,17 +97,17 @@ def scat_phi(rho, theta, params):
             + spherical_yn(l, kR) * spherical_yn(l, kR, True)
         )
     )
-    return 0
+    return value
 
 
 # combined forces
 def rho(rho, theta, params):
-    return 1  # grad_rho(rho, theta, params) + scat_rho(rho, theta, params)
+    return grad_rho(rho, theta, params) + scat_rho(rho, theta, params)
 
 
 def phi(rho, theta, params):
-    return 0  # scat_phi(rho, theta, params)
+    return scat_phi(rho, theta, params)
 
 
 def theta(rho, theta, params):
-    return 0  # grad_theta(rho, theta, params)
+    return grad_theta(rho, theta, params)
