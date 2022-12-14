@@ -11,7 +11,7 @@ import pandas as pd
 # dphi = v_y*np.cos(phi)-v_x*np.sin(phi)
 
 # make the randomzed optimize later, add other velocities
-
+# hi
 check = []
 par = {
     "l": 40,
